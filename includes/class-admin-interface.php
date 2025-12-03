@@ -62,6 +62,14 @@ class WP_Roles_Permissions_Admin_Interface {
             return;
         }
         
+        // Enqueue admin styles
+        wp_enqueue_style(
+            'wp-roles-permissions-admin',
+            WP_ROLES_PERMISSIONS_PLUGIN_URL . 'assets/css/admin.css',
+            array(),
+            WP_ROLES_PERMISSIONS_VERSION
+        );
+        
         // Enqueue WordPress color picker
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-color-picker');
@@ -340,33 +348,6 @@ class WP_Roles_Permissions_Admin_Interface {
                     <?php endif; ?>
                 </div>
             </div>
-            
-            <style>
-                .wp-roles-permissions-admin {
-                    display: flex;
-                    gap: 30px;
-                    margin-top: 20px;
-                }
-                .wp-roles-permissions-form-container,
-                .wp-roles-permissions-list-container {
-                    flex: 1;
-                    background: #fff;
-                    padding: 20px;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-                .capabilities-list {
-                    max-height: 300px;
-                    overflow-y: auto;
-                    border: 1px solid #ddd;
-                    padding: 10px;
-                    background: #fafafa;
-                }
-                @media (max-width: 782px) {
-                    .wp-roles-permissions-admin {
-                        flex-direction: column;
-                    }
-                }
-            </style>
         </div>
         <?php
     }
@@ -501,33 +482,6 @@ class WP_Roles_Permissions_Admin_Interface {
                     </table>
                 <?php endif; ?>
             </div>
-            
-            <style>
-                .wp-roles-permissions-user-edit {
-                    background: #fff;
-                    padding: 20px;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                    margin-top: 20px;
-                }
-                .user-roles-section,
-                .add-role-section {
-                    margin-bottom: 30px;
-                    padding-bottom: 30px;
-                    border-bottom: 1px solid #ddd;
-                }
-                .current-roles-list {
-                    list-style: none;
-                    padding: 0;
-                }
-                .current-roles-list li {
-                    padding: 10px;
-                    background: #f0f0f0;
-                    margin-bottom: 5px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-            </style>
         </div>
         <?php
     }

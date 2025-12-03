@@ -35,6 +35,40 @@ class WP_Roles_Permissions_Content_Restriction {
         
         // Handle direct access to restricted posts
         add_action('template_redirect', array($this, 'check_single_post_access'));
+        
+        // Enqueue styles
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_styles'));
+    }
+    
+    /**
+     * Enqueue admin styles
+     */
+    public function enqueue_admin_styles() {
+        global $post;
+        
+        // Only load on post/page edit screens
+        $screen = get_current_screen();
+        if ($screen && in_array($screen->post_type, array('post', 'page'))) {
+            wp_enqueue_style(
+                'wp-roles-permissions-admin',
+                WP_ROLES_PERMISSIONS_PLUGIN_URL . 'assets/css/admin.css',
+                array(),
+                WP_ROLES_PERMISSIONS_VERSION
+            );
+        }
+    }
+    
+    /**
+     * Enqueue frontend styles
+     */
+    public function enqueue_frontend_styles() {
+        wp_enqueue_style(
+            'wp-roles-permissions-frontend',
+            WP_ROLES_PERMISSIONS_PLUGIN_URL . 'assets/css/frontend.css',
+            array(),
+            WP_ROLES_PERMISSIONS_VERSION
+        );
     }
     
     /**
@@ -86,21 +120,6 @@ class WP_Roles_Permissions_Content_Restriction {
         }
         
         echo '</div>';
-        
-        // Add inline styles
-        echo '<style>
-            .wp-roles-permissions-meta-box {
-                padding: 5px 0;
-            }
-            .wp-roles-permissions-meta-box label {
-                cursor: pointer;
-            }
-            .wp-roles-permissions-meta-box label:hover {
-                background-color: #f0f0f0;
-                padding: 2px 4px;
-                margin: 0 -4px;
-            }
-        </style>';
     }
     
     /**
@@ -205,28 +224,6 @@ class WP_Roles_Permissions_Content_Restriction {
             
             $message .= '</div>';
             
-            // Add inline styles
-            $message .= '<style>
-                .wp-roles-permissions-restricted {
-                    padding: 20px;
-                    background-color: #fff3cd;
-                    border: 1px solid #ffc107;
-                    border-radius: 4px;
-                    margin: 20px 0;
-                }
-                .wp-roles-permissions-restricted h3 {
-                    margin-top: 0;
-                    color: #856404;
-                }
-                .wp-roles-permissions-restricted p {
-                    color: #856404;
-                }
-                .wp-roles-permissions-restricted a {
-                    color: #004085;
-                    text-decoration: underline;
-                }
-            </style>';
-            
             return $message;
         }
         
@@ -283,32 +280,16 @@ class WP_Roles_Permissions_Content_Restriction {
             
             // Administrators can see everything
             if (!in_array('administrator', $current_user->roles)) {
-                $user_roles = $current_user->roles;
+                // For non-administrators, filter using a custom check
+                // We'll get all restricted posts and check them individually
+                $where .= " AND {$wpdb->posts}.ID NOT IN (
+                    SELECT post_id FROM {$wpdb->postmeta} 
+                    WHERE meta_key = '_wp_roles_permissions_roles'
+                )";
                 
-                if (!empty($user_roles)) {
-                    // Exclude posts that have role restrictions user doesn't have
-                    $roles_placeholders = implode(',', array_fill(0, count($user_roles), '%s'));
-                    
-                    $where .= $wpdb->prepare(
-                        " AND ({$wpdb->posts}.ID NOT IN (
-                            SELECT post_id FROM {$wpdb->postmeta} 
-                            WHERE meta_key = '_wp_roles_permissions_roles'
-                        ) OR {$wpdb->posts}.ID IN (
-                            SELECT post_id FROM {$wpdb->postmeta} 
-                            WHERE meta_key = '_wp_roles_permissions_roles'
-                            AND meta_value LIKE %s",
-                        '%' . $wpdb->esc_like(serialize($user_roles[0])) . '%'
-                    );
-                    
-                    for ($i = 1; $i < count($user_roles); $i++) {
-                        $where .= $wpdb->prepare(
-                            " OR meta_value LIKE %s",
-                            '%' . $wpdb->esc_like(serialize($user_roles[$i])) . '%'
-                        );
-                    }
-                    
-                    $where .= "))";
-                }
+                // Note: For posts with role restrictions, we rely on the can_user_access_post check
+                // This simple approach hides all restricted content from non-admins in listings
+                // Individual posts are checked via template_redirect and restrict_content
             }
         }
         
@@ -328,9 +309,6 @@ class WP_Roles_Permissions_Content_Restriction {
         
         // Check if user can access
         if (!$this->can_user_access_post($post->ID)) {
-            // Get assigned roles
-            $assigned_roles = get_post_meta($post->ID, '_wp_roles_permissions_roles', true);
-            
             if (!is_user_logged_in()) {
                 // Redirect to login
                 auth_redirect();
