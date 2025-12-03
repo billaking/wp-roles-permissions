@@ -113,7 +113,7 @@ class WP_Roles_Permissions_Content_Restriction {
         
         foreach ($all_roles as $role_slug => $role_name) {
             $checked = in_array($role_slug, $assigned_roles) ? 'checked="checked"' : '';
-            echo '<label style="display: block; margin-bottom: 8px;">';
+            echo '<label class="wp-roles-permissions-role-label">';
             echo '<input type="checkbox" name="wp_roles_permissions_roles[]" value="' . esc_attr($role_slug) . '" ' . $checked . '> ';
             echo esc_html($role_name);
             echo '</label>';
@@ -246,54 +246,35 @@ class WP_Roles_Permissions_Content_Restriction {
             return;
         }
         
-        // Add meta query to exclude restricted posts
-        add_filter('posts_where', array($this, 'posts_where_filter'), 10, 2);
+        // Filter posts after they're retrieved
+        add_filter('the_posts', array($this, 'filter_posts_by_role'), 10, 2);
     }
     
     /**
-     * Modify WHERE clause to filter restricted posts
+     * Filter posts based on user role access
      *
-     * @param string $where WHERE clause
+     * @param array $posts Array of post objects
      * @param WP_Query $query Query object
-     * @return string Modified WHERE clause
+     * @return array Filtered array of posts
      */
-    public function posts_where_filter($where, $query) {
-        global $wpdb;
-        
+    public function filter_posts_by_role($posts, $query) {
         // Remove this filter to prevent infinite loops
-        remove_filter('posts_where', array($this, 'posts_where_filter'), 10);
+        remove_filter('the_posts', array($this, 'filter_posts_by_role'), 10);
         
-        // Only apply on frontend main query for posts/pages
+        // Only apply on frontend main query
         if (is_admin() || !$query->is_main_query() || $query->is_singular()) {
-            return $where;
+            return $posts;
         }
         
-        // If user is not logged in, exclude posts with role restrictions
-        if (!is_user_logged_in()) {
-            $where .= " AND {$wpdb->posts}.ID NOT IN (
-                SELECT post_id FROM {$wpdb->postmeta} 
-                WHERE meta_key = '_wp_roles_permissions_roles'
-            )";
-        } else {
-            // Get current user roles
-            $current_user = wp_get_current_user();
-            
-            // Administrators can see everything
-            if (!in_array('administrator', $current_user->roles)) {
-                // For non-administrators, filter using a custom check
-                // We'll get all restricted posts and check them individually
-                $where .= " AND {$wpdb->posts}.ID NOT IN (
-                    SELECT post_id FROM {$wpdb->postmeta} 
-                    WHERE meta_key = '_wp_roles_permissions_roles'
-                )";
-                
-                // Note: For posts with role restrictions, we rely on the can_user_access_post check
-                // This simple approach hides all restricted content from non-admins in listings
-                // Individual posts are checked via template_redirect and restrict_content
+        // Filter posts user can't access
+        $filtered_posts = array();
+        foreach ($posts as $post) {
+            if ($this->can_user_access_post($post->ID)) {
+                $filtered_posts[] = $post;
             }
         }
         
-        return $where;
+        return $filtered_posts;
     }
     
     /**

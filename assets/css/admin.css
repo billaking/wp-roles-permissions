@@ -5,7 +5,7 @@
     padding: 5px 0;
 }
 
-.wp-roles-permissions-meta-box label {
+.wp-roles-permissions-meta-box label.wp-roles-permissions-role-label {
     cursor: pointer;
     display: block;
     margin-bottom: 8px;

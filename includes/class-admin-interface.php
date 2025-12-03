@@ -69,10 +69,6 @@ class WP_Roles_Permissions_Admin_Interface {
             array(),
             WP_ROLES_PERMISSIONS_VERSION
         );
-        
-        // Enqueue WordPress color picker
-        wp_enqueue_style('wp-color-picker');
-        wp_enqueue_script('wp-color-picker');
     }
     
     /**
