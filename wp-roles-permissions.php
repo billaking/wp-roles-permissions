@@ -26,6 +26,7 @@ define('WP_ROLES_PERMISSIONS_PLUGIN_URL', plugin_dir_url(__FILE__));
 require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-role-manager.php';
 require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-content-restriction.php';
 require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-admin-interface.php';
+require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-user-access-restriction.php';
 
 /**
  * Main plugin class
@@ -53,6 +54,11 @@ class WP_Roles_Permissions {
     public $admin_interface;
     
     /**
+     * User Access Restriction instance
+     */
+    public $user_access_restriction;
+    
+    /**
      * Get single instance of the class
      */
     public static function get_instance() {
@@ -69,6 +75,7 @@ class WP_Roles_Permissions {
         // Initialize components
         $this->role_manager = new WP_Roles_Permissions_Role_Manager();
         $this->content_restriction = new WP_Roles_Permissions_Content_Restriction();
+        $this->user_access_restriction = new WP_Roles_Permissions_User_Access_Restriction();
         
         // Initialize admin interface only in admin area
         if (is_admin()) {

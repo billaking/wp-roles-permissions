@@ -27,6 +27,7 @@ A comprehensive WordPress plugin for advanced role and permission management. Cr
 - **Login Redirection**: Non-logged users are redirected to login for restricted content
 - **Access Denied Messages**: Clear feedback when users lack permissions
 - **Nonce Protection**: All forms secured with WordPress nonces
+- **Administrator Protection**: Custom roles with user management capabilities cannot view, edit, or delete administrator accounts
 
 ## Installation
 
@@ -97,7 +98,8 @@ wp-roles-permissions/
 ├── includes/
 │   ├── class-role-manager.php        # Role CRUD operations
 │   ├── class-content-restriction.php # Content access control
-│   └── class-admin-interface.php     # Admin UI
+│   ├── class-admin-interface.php     # Admin UI
+│   └── class-user-access-restriction.php # User access protection
 ├── README.md                          # This file
 ├── INSTALLATION.md                    # Installation guide
 └── USER-GUIDE.md                      # Detailed user guide
@@ -123,6 +125,11 @@ wp-roles-permissions/
 - Provides admin UI for role management
 - Handles user role assignment interface
 - Processes form submissions
+
+**WP_Roles_Permissions_User_Access_Restriction**:
+- Prevents non-administrators from viewing administrator accounts in user lists
+- Blocks editing of administrator accounts by non-administrators
+- Blocks deletion of administrator accounts by non-administrators
 
 ## Security
 

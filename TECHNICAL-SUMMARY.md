@@ -25,6 +25,12 @@ This WordPress plugin provides comprehensive role and permission management capa
 - **Smart Filtering**: Automatically hides restricted content from queries
 - **Administrator Override**: Administrators always have full access
 
+### 4. User Access Protection
+- **Administrator Isolation**: Non-administrators cannot view administrator accounts in user lists
+- **Edit Protection**: Non-administrators cannot edit administrator profiles
+- **Delete Protection**: Non-administrators cannot delete administrator accounts
+- **Security Enhancement**: Prevents privilege escalation through user management capabilities
+
 ## Architecture
 
 ### File Structure
@@ -35,7 +41,8 @@ wp-roles-permissions/
 ├── includes/
 │   ├── class-role-manager.php        # Role CRUD operations
 │   ├── class-content-restriction.php # Content access control
-│   └── class-admin-interface.php     # Admin UI
+│   ├── class-admin-interface.php     # Admin UI
+│   └── class-user-access-restriction.php # User access protection
 ├── assets/
 │   └── css/
 │       ├── admin.css                 # Admin styles
@@ -68,6 +75,12 @@ wp-roles-permissions/
    - Admin menu and pages
    - Form handling
    - User interface rendering
+
+5. **WP_Roles_Permissions_User_Access_Restriction**
+   - Filters administrator users from user lists for non-administrators
+   - Prevents non-administrators from editing administrator profiles
+   - Prevents non-administrators from deleting administrator accounts
+   - Displays access denied notices when appropriate
 
 ## Implementation Details
 

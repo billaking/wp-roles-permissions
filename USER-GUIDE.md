@@ -174,6 +174,7 @@ The plugin automatically:
 1. **Regular Audits**: Periodically review user roles
 2. **Onboarding**: Assign roles immediately when users join
 3. **Offboarding**: Remove or change roles when users leave
+4. **Administrator Protection**: Note that custom roles with user management capabilities cannot view, edit, or delete administrator accounts for security reasons
 
 ---
 
@@ -204,6 +205,17 @@ The plugin automatically:
 - Only administrators can manage roles and permissions
 - User role changes are logged in the WordPress activity
 - Content restrictions are enforced at the WordPress core level
+
+### Administrator Account Protection
+
+For enhanced security, the plugin includes built-in protection for administrator accounts:
+
+- **User List Filtering**: When non-administrator users (even with `list_users` capability) view the user list, administrator accounts are automatically hidden from view
+- **Edit Protection**: Non-administrators cannot edit administrator user profiles, even if they have the `edit_users` capability
+- **Delete Protection**: Non-administrators cannot delete administrator accounts, even if they have the `delete_users` capability
+- **Administrator-Only Access**: Only users with the administrator role can view, edit, or delete other administrator accounts
+
+This protection ensures that custom roles with user management capabilities (such as a "User Manager" role) cannot escalate privileges or compromise administrator accounts.
 
 ---
 
