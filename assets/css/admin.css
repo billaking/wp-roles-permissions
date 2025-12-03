@@ -1,0 +1,87 @@
+/* WP Roles & Permissions - Admin Styles */
+
+/* Role meta box */
+.wp-roles-permissions-meta-box {
+    padding: 5px 0;
+}
+
+.wp-roles-permissions-meta-box label.wp-roles-permissions-role-label {
+    cursor: pointer;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.wp-roles-permissions-meta-box label:hover {
+    background-color: #f0f0f0;
+    padding: 2px 4px;
+    margin: 0 -4px;
+}
+
+/* Capability checkbox labels */
+.capability-checkbox-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Inline forms */
+.inline-form {
+    display: inline;
+}
+
+/* Admin pages */
+.wp-roles-permissions-admin {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.wp-roles-permissions-form-container,
+.wp-roles-permissions-list-container {
+    flex: 1;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.capabilities-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: #fafafa;
+}
+
+@media (max-width: 782px) {
+    .wp-roles-permissions-admin {
+        flex-direction: column;
+    }
+}
+
+/* User role management */
+.wp-roles-permissions-user-edit {
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.user-roles-section,
+.add-role-section {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #ddd;
+}
+
+.current-roles-list {
+    list-style: none;
+    padding: 0;
+}
+
+.current-roles-list li {
+    padding: 10px;
+    background: #f0f0f0;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
