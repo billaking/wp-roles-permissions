@@ -11,9 +11,18 @@ if (!defined('ABSPATH')) {
 class WP_Roles_Permissions_Admin_Interface {
     
     /**
+     * Role Manager instance
+     *
+     * @var WP_Roles_Permissions_Role_Manager
+     */
+    private $role_manager;
+    
+    /**
      * Constructor
      */
     public function __construct() {
+        $this->role_manager = new WP_Roles_Permissions_Role_Manager();
+        
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         add_action('admin_init', array($this, 'handle_role_actions'));
@@ -85,8 +94,6 @@ class WP_Roles_Permissions_Admin_Interface {
             return;
         }
         
-        $role_manager = new WP_Roles_Permissions_Role_Manager();
-        
         // Handle role creation
         if (isset($_POST['create_role']) && isset($_POST['role_slug']) && isset($_POST['role_name'])) {
             check_admin_referer('create_role_action', 'create_role_nonce');
@@ -101,7 +108,7 @@ class WP_Roles_Permissions_Admin_Interface {
                 $caps[$cap] = true;
             }
             
-            $result = $role_manager->create_role($role_slug, $role_name, $caps);
+            $result = $this->role_manager->create_role($role_slug, $role_name, $caps);
             
             if (is_wp_error($result)) {
                 add_settings_error('wp_roles_permissions', 'role_error', $result->get_error_message(), 'error');
@@ -124,7 +131,7 @@ class WP_Roles_Permissions_Admin_Interface {
                 $caps[$cap] = true;
             }
             
-            $result = $role_manager->update_role($role_slug, $role_name, $caps);
+            $result = $this->role_manager->update_role($role_slug, $role_name, $caps);
             
             if (is_wp_error($result)) {
                 add_settings_error('wp_roles_permissions', 'role_error', $result->get_error_message(), 'error');
@@ -138,7 +145,7 @@ class WP_Roles_Permissions_Admin_Interface {
             check_admin_referer('delete_role_' . $_GET['role']);
             
             $role_slug = sanitize_key($_GET['role']);
-            $result = $role_manager->delete_role($role_slug);
+            $result = $this->role_manager->delete_role($role_slug);
             
             if (is_wp_error($result)) {
                 add_settings_error('wp_roles_permissions', 'role_error', $result->get_error_message(), 'error');
@@ -166,8 +173,6 @@ class WP_Roles_Permissions_Admin_Interface {
             return;
         }
         
-        $role_manager = new WP_Roles_Permissions_Role_Manager();
-        
         // Handle role assignment
         if (isset($_POST['assign_role']) && isset($_POST['user_id']) && isset($_POST['role'])) {
             check_admin_referer('assign_role_action', 'assign_role_nonce');
@@ -176,7 +181,7 @@ class WP_Roles_Permissions_Admin_Interface {
             $role_slug = sanitize_key($_POST['role']);
             $replace = isset($_POST['replace_roles']) ? true : false;
             
-            $result = $role_manager->assign_role_to_user($user_id, $role_slug, $replace);
+            $result = $this->role_manager->assign_role_to_user($user_id, $role_slug, $replace);
             
             if (is_wp_error($result)) {
                 add_settings_error('wp_roles_permissions', 'role_error', $result->get_error_message(), 'error');
@@ -192,7 +197,7 @@ class WP_Roles_Permissions_Admin_Interface {
             $user_id = intval($_POST['user_id']);
             $role_slug = sanitize_key($_POST['role']);
             
-            $result = $role_manager->remove_role_from_user($user_id, $role_slug);
+            $result = $this->role_manager->remove_role_from_user($user_id, $role_slug);
             
             if (is_wp_error($result)) {
                 add_settings_error('wp_roles_permissions', 'role_error', $result->get_error_message(), 'error');
@@ -206,9 +211,8 @@ class WP_Roles_Permissions_Admin_Interface {
      * Render the roles management page
      */
     public function render_roles_page() {
-        $role_manager = new WP_Roles_Permissions_Role_Manager();
-        $custom_roles = $role_manager->get_custom_roles();
-        $all_capabilities = $role_manager->get_all_capabilities();
+        $custom_roles = $this->role_manager->get_custom_roles();
+        $all_capabilities = $this->role_manager->get_all_capabilities();
         
         // Get role to edit if specified
         $edit_role = null;

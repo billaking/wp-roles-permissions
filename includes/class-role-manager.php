@@ -121,16 +121,19 @@ class WP_Roles_Permissions_Role_Manager {
             update_option('wp_roles_permissions_custom_roles', $custom_roles);
         }
         
-        // Update role display name directly in WordPress options
-        // This is the proper way to update just the display name without recreating the role
-        global $wp_roles;
-        if (!isset($wp_roles)) {
-            $wp_roles = new WP_Roles();
+        // WordPress doesn't provide a clean API to update role display names
+        // We need to update it in the wp_user_roles option directly
+        // This is the standard approach used by many role management plugins
+        $roles_option = get_option('wp_user_roles', array());
+        if (isset($roles_option[$role_slug])) {
+            $roles_option[$role_slug]['name'] = $role_name;
+            update_option('wp_user_roles', $roles_option);
+            
+            // Clear the cached roles to ensure the change is reflected
+            if (function_exists('wp_roles')) {
+                wp_roles()->reinit();
+            }
         }
-        $wp_roles->roles[$role_slug]['name'] = $role_name;
-        $wp_roles->role_names[$role_slug] = $role_name;
-        update_option($wp_roles->role_key, $wp_roles->roles);
-        $wp_roles->role_objects[$role_slug]->name = $role_name;
         
         return true;
     }

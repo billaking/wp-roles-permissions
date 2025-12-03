@@ -11,6 +11,13 @@ if (!defined('ABSPATH')) {
 class WP_Roles_Permissions_Content_Restriction {
     
     /**
+     * Flag to prevent multiple filter additions
+     *
+     * @var bool
+     */
+    private static $filter_added = false;
+    
+    /**
      * Constructor
      */
     public function __construct() {
@@ -30,8 +37,11 @@ class WP_Roles_Permissions_Content_Restriction {
         // Filter content on frontend
         add_filter('the_content', array($this, 'restrict_content'), 10, 1);
         
-        // Filter posts in queries
-        add_action('pre_get_posts', array($this, 'filter_restricted_posts'));
+        // Filter posts in queries - add once
+        if (!self::$filter_added) {
+            add_filter('the_posts', array($this, 'filter_posts_by_role'), 10, 2);
+            self::$filter_added = true;
+        }
         
         // Handle direct access to restricted posts
         add_action('template_redirect', array($this, 'check_single_post_access'));
@@ -228,26 +238,6 @@ class WP_Roles_Permissions_Content_Restriction {
         }
         
         return $content;
-    }
-    
-    /**
-     * Filter restricted posts from queries
-     *
-     * @param WP_Query $query Query object
-     */
-    public function filter_restricted_posts($query) {
-        // Only apply on frontend and main query
-        if (is_admin() || !$query->is_main_query()) {
-            return;
-        }
-        
-        // Don't filter on singular pages (handled by restrict_content)
-        if ($query->is_singular()) {
-            return;
-        }
-        
-        // Filter posts after they're retrieved
-        add_filter('the_posts', array($this, 'filter_posts_by_role'), 10, 2);
     }
     
     /**
