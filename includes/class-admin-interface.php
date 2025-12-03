@@ -280,7 +280,7 @@ class WP_Roles_Permissions_Admin_Interface {
                                         foreach ($all_capabilities as $cap):
                                             $checked = in_array($cap, $current_capabilities) ? 'checked' : '';
                                         ?>
-                                            <label style="display: block; margin-bottom: 5px;">
+                                            <label class="capability-checkbox-label">
                                                 <input type="checkbox" name="capabilities[]" value="<?php echo esc_attr($cap); ?>" <?php echo $checked; ?>>
                                                 <?php echo esc_html($cap); ?>
                                             </label>
@@ -386,7 +386,7 @@ class WP_Roles_Permissions_Admin_Interface {
                                     ?>
                                         <li>
                                             <?php echo esc_html($role_name); ?>
-                                            <form method="post" style="display: inline;">
+                                            <form method="post" class="inline-form">
                                                 <?php wp_nonce_field('remove_role_action', 'remove_role_nonce'); ?>
                                                 <input type="hidden" name="user_id" value="<?php echo $edit_user->ID; ?>">
                                                 <input type="hidden" name="role" value="<?php echo esc_attr($role_slug); ?>">

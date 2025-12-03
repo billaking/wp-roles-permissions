@@ -17,6 +17,17 @@
     margin: 0 -4px;
 }
 
+/* Capability checkbox labels */
+.capability-checkbox-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Inline forms */
+.inline-form {
+    display: inline;
+}
+
 /* Admin pages */
 .wp-roles-permissions-admin {
     display: flex;
