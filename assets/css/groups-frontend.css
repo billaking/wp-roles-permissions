@@ -1,0 +1,315 @@
+/* WP Roles & Permissions - Groups Frontend Styles */
+
+/* Group List */
+.wrp-groups-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin: 20px 0;
+}
+
+.wrp-group-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+}
+
+.wrp-group-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.wrp-group-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.wrp-group-content {
+    padding: 20px;
+}
+
+.wrp-group-title {
+    margin: 0 0 10px;
+    font-size: 1.5em;
+}
+
+.wrp-group-title a {
+    text-decoration: none;
+    color: #333;
+}
+
+.wrp-group-title a:hover {
+    color: #0073aa;
+}
+
+.wrp-group-meta {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.wrp-member-count::before {
+    content: "👥 ";
+}
+
+.wrp-group-excerpt {
+    margin-bottom: 15px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.wrp-group-link {
+    display: inline-block;
+    color: #0073aa;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.wrp-group-link:hover {
+    text-decoration: underline;
+}
+
+/* Events List */
+.wrp-events-list {
+    margin: 20px 0;
+}
+
+.wrp-event-item {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.wrp-event-date-badge {
+    flex-shrink: 0;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.wrp-event-date-badge .month {
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.wrp-event-date-badge .day {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.wrp-event-details {
+    flex: 1;
+}
+
+.wrp-event-title {
+    margin: 0 0 10px;
+    font-size: 1.3em;
+    color: #333;
+}
+
+.wrp-event-meta {
+    margin-bottom: 10px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.wrp-event-meta span {
+    margin-right: 15px;
+}
+
+.wrp-event-excerpt {
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Members Grid */
+.wrp-members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.wrp-member-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.wrp-member-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.wrp-member-avatar {
+    margin-bottom: 15px;
+}
+
+.wrp-member-avatar img {
+    border-radius: 50%;
+    border: 3px solid #f0f0f0;
+}
+
+.wrp-member-name {
+    margin: 0 0 5px;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.wrp-member-role {
+    color: #0073aa;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.wrp-member-contact {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 10px;
+}
+
+.wrp-member-contact a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.wrp-member-contact a:hover {
+    text-decoration: underline;
+}
+
+/* Documents List */
+.wrp-documents-list {
+    margin: 20px 0;
+}
+
+.wrp-document-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    transition: background-color 0.2s ease;
+}
+
+.wrp-document-item:hover {
+    background-color: #f9f9f9;
+}
+
+.wrp-doc-icon {
+    font-size: 24px;
+}
+
+.wrp-doc-link {
+    flex: 1;
+    color: #0073aa;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.wrp-doc-link:hover {
+    text-decoration: underline;
+}
+
+.wrp-doc-meta {
+    font-size: 0.85em;
+    color: #999;
+}
+
+/* Upcoming Events Widget */
+.wrp-upcoming-events {
+    margin: 20px 0;
+}
+
+.wrp-upcoming-event {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: #fff;
+    border-left: 4px solid #0073aa;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.wrp-event-date {
+    flex-shrink: 0;
+    text-align: center;
+    font-weight: 600;
+    color: #0073aa;
+    min-width: 80px;
+}
+
+.wrp-event-info h4 {
+    margin: 0 0 5px;
+    font-size: 1.1em;
+}
+
+.wrp-event-group {
+    color: #666;
+    font-style: italic;
+}
+
+/* No Results Messages */
+.wrp-no-groups,
+.wrp-no-events,
+.wrp-no-members,
+.wrp-no-documents {
+    padding: 20px;
+    text-align: center;
+    background: #f9f9f9;
+    border: 1px dashed #ddd;
+    border-radius: 6px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wrp-groups-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .wrp-members-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wrp-event-item {
+        flex-direction: column;
+    }
+    
+    .wrp-event-date-badge {
+        width: 100%;
+        flex-direction: row;
+        gap: 10px;
+        padding: 10px;
+    }
+    
+    .wrp-upcoming-event {
+        flex-direction: column;
+    }
+    
+    .wrp-event-date {
+        text-align: left;
+    }
+}

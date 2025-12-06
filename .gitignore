@@ -1,0 +1,14 @@
+# WordPress
+.DS_Store
+
+# Plugin specific
+templates/temp-*.php
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+Thumbs.db

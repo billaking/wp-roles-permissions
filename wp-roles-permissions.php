@@ -27,6 +27,9 @@ require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-role-manager.php'
 require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-content-restriction.php';
 require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-admin-interface.php';
 require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-user-access-restriction.php';
+require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-template-manager.php';
+require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-group-manager.php';
+require_once WP_ROLES_PERMISSIONS_PLUGIN_DIR . 'includes/class-group-shortcodes.php';
 
 /**
  * Main plugin class
@@ -59,6 +62,21 @@ class WP_Roles_Permissions {
     public $user_access_restriction;
     
     /**
+     * Template Manager instance
+     */
+    public $template_manager;
+    
+    /**
+     * Group Manager instance
+     */
+    public $group_manager;
+    
+    /**
+     * Group Shortcodes instance
+     */
+    public $group_shortcodes;
+    
+    /**
      * Get single instance of the class
      */
     public static function get_instance() {
@@ -76,6 +94,9 @@ class WP_Roles_Permissions {
         $this->role_manager = new WP_Roles_Permissions_Role_Manager();
         $this->content_restriction = new WP_Roles_Permissions_Content_Restriction();
         $this->user_access_restriction = new WP_Roles_Permissions_User_Access_Restriction();
+        $this->template_manager = new WP_Roles_Permissions_Template_Manager();
+        $this->group_manager = new WP_Roles_Permissions_Group_Manager();
+        $this->group_shortcodes = new WP_Roles_Permissions_Group_Shortcodes();
         
         // Initialize admin interface only in admin area
         if (is_admin()) {

@@ -18,15 +18,24 @@ class WP_Roles_Permissions_Admin_Interface {
     private $role_manager;
     
     /**
+     * Template Manager instance
+     *
+     * @var WP_Roles_Permissions_Template_Manager
+     */
+    private $template_manager;
+    
+    /**
      * Constructor
      */
     public function __construct() {
         $this->role_manager = new WP_Roles_Permissions_Role_Manager();
+        $this->template_manager = new WP_Roles_Permissions_Template_Manager();
         
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         add_action('admin_init', array($this, 'handle_role_actions'));
         add_action('admin_init', array($this, 'handle_user_role_actions'));
+        add_action('admin_init', array($this, 'handle_template_actions'));
     }
     
     /**
@@ -59,6 +68,15 @@ class WP_Roles_Permissions_Admin_Interface {
             'manage_options',
             'wp-roles-permissions-users',
             array($this, 'render_users_page')
+        );
+        
+        add_submenu_page(
+            'wp-roles-permissions',
+            __('Post Templates', 'wp-roles-permissions'),
+            __('Post Templates', 'wp-roles-permissions'),
+            'manage_options',
+            'wp-roles-permissions-templates',
+            array($this, 'render_templates_page')
         );
     }
     
@@ -481,6 +499,279 @@ class WP_Roles_Permissions_Admin_Interface {
                         </tbody>
                     </table>
                 <?php endif; ?>
+            </div>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Handle template actions (create, update, delete)
+     */
+    public function handle_template_actions() {
+        // Check if we're on the templates page
+        if (!isset($_GET['page']) || $_GET['page'] !== 'wp-roles-permissions-templates') {
+            return;
+        }
+        
+        // Handle template update
+        if (isset($_POST['update_template']) && isset($_POST['template_slug'])) {
+            check_admin_referer('update_template_action', 'update_template_nonce');
+            
+            $slug = sanitize_key($_POST['template_slug']);
+            
+            // Check if user can edit this template
+            if (!$this->template_manager->user_can_edit_template($slug)) {
+                add_settings_error('wp_roles_permissions', 'template_error', __('You do not have permission to edit this template.', 'wp-roles-permissions'), 'error');
+                return;
+            }
+            
+            $data = array(
+                'name' => sanitize_text_field($_POST['template_name']),
+                'content' => wp_kses_post($_POST['template_content']),
+                'description' => sanitize_text_field($_POST['template_description']),
+                'edit_capability' => isset($_POST['edit_capability']) ? sanitize_text_field($_POST['edit_capability']) : 'manage_options'
+            );
+            
+            $result = $this->template_manager->update_template($slug, $data);
+            
+            if (is_wp_error($result)) {
+                add_settings_error('wp_roles_permissions', 'template_error', $result->get_error_message(), 'error');
+            } else {
+                add_settings_error('wp_roles_permissions', 'template_updated', __('Template updated successfully!', 'wp-roles-permissions'), 'success');
+            }
+        }
+        
+        // Handle template creation
+        if (isset($_POST['create_template']) && isset($_POST['template_slug'])) {
+            check_admin_referer('create_template_action', 'create_template_nonce');
+            
+            $slug = sanitize_key($_POST['template_slug']);
+            
+            $data = array(
+                'name' => sanitize_text_field($_POST['template_name']),
+                'content' => wp_kses_post($_POST['template_content']),
+                'description' => sanitize_text_field($_POST['template_description']),
+                'edit_capability' => isset($_POST['edit_capability']) ? sanitize_text_field($_POST['edit_capability']) : 'manage_options'
+            );
+            
+            $result = $this->template_manager->create_template($slug, $data);
+            
+            if (is_wp_error($result)) {
+                add_settings_error('wp_roles_permissions', 'template_error', $result->get_error_message(), 'error');
+            } else {
+                add_settings_error('wp_roles_permissions', 'template_created', __('Template created successfully!', 'wp-roles-permissions'), 'success');
+            }
+        }
+        
+        // Handle template deletion
+        if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['template'])) {
+            check_admin_referer('delete_template_' . $_GET['template']);
+            
+            $slug = sanitize_key($_GET['template']);
+            
+            // Check if user can manage templates
+            if (!current_user_can('manage_options')) {
+                add_settings_error('wp_roles_permissions', 'template_error', __('You do not have permission to delete templates.', 'wp-roles-permissions'), 'error');
+                return;
+            }
+            
+            $result = $this->template_manager->delete_template($slug);
+            
+            if (is_wp_error($result)) {
+                add_settings_error('wp_roles_permissions', 'template_error', $result->get_error_message(), 'error');
+            } else {
+                add_settings_error('wp_roles_permissions', 'template_deleted', __('Template deleted successfully!', 'wp-roles-permissions'), 'success');
+            }
+            
+            // Redirect to remove query args
+            wp_redirect(admin_url('admin.php?page=wp-roles-permissions-templates'));
+            exit;
+        }
+    }
+    
+    /**
+     * Render the templates management page
+     */
+    public function render_templates_page() {
+        global $wp_roles;
+        
+        $templates = $this->template_manager->get_templates();
+        
+        // Get template to edit if specified
+        $edit_template = null;
+        $edit_slug = null;
+        if (isset($_GET['edit']) && !empty($_GET['edit'])) {
+            $edit_slug = sanitize_key($_GET['edit']);
+            $edit_template = $this->template_manager->get_template($edit_slug);
+            
+            // Check if user can edit this template
+            if ($edit_template && !$this->template_manager->user_can_edit_template($edit_slug)) {
+                wp_die(__('You do not have permission to edit this template.', 'wp-roles-permissions'));
+            }
+        }
+        
+        ?>
+        <div class="wrap">
+            <h1><?php _e('Post Templates Management', 'wp-roles-permissions'); ?></h1>
+            
+            <?php settings_errors('wp_roles_permissions'); ?>
+            
+            <div class="wp-roles-permissions-admin">
+                <div class="wp-roles-permissions-form-container">
+                    <h2><?php echo $edit_template ? __('Edit Template', 'wp-roles-permissions') : __('Create New Template', 'wp-roles-permissions'); ?></h2>
+                    
+                    <form method="post" action="">
+                        <?php
+                        if ($edit_template) {
+                            wp_nonce_field('update_template_action', 'update_template_nonce');
+                            echo '<input type="hidden" name="template_slug" value="' . esc_attr($edit_slug) . '">';
+                        } else {
+                            wp_nonce_field('create_template_action', 'create_template_nonce');
+                        }
+                        ?>
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">
+                                    <label for="template_slug"><?php _e('Template Slug', 'wp-roles-permissions'); ?></label>
+                                </th>
+                                <td>
+                                    <?php if ($edit_template): ?>
+                                        <input type="text" id="template_slug" value="<?php echo esc_attr($edit_slug); ?>" disabled class="regular-text">
+                                        <p class="description"><?php _e('Template slug cannot be changed after creation.', 'wp-roles-permissions'); ?></p>
+                                    <?php else: ?>
+                                        <input type="text" name="template_slug" id="template_slug" class="regular-text" required>
+                                        <p class="description"><?php _e('Lowercase letters, numbers, and underscores only.', 'wp-roles-permissions'); ?></p>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="template_name"><?php _e('Template Name', 'wp-roles-permissions'); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" name="template_name" id="template_name" 
+                                           value="<?php echo $edit_template ? esc_attr($edit_template['name']) : ''; ?>" 
+                                           class="regular-text" required>
+                                    <p class="description"><?php _e('Display name for the template.', 'wp-roles-permissions'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="template_description"><?php _e('Description', 'wp-roles-permissions'); ?></label>
+                                </th>
+                                <td>
+                                    <input type="text" name="template_description" id="template_description" 
+                                           value="<?php echo $edit_template ? esc_attr($edit_template['description']) : ''; ?>" 
+                                           class="regular-text">
+                                    <p class="description"><?php _e('Brief description of the template.', 'wp-roles-permissions'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="edit_capability"><?php _e('Edit Capability', 'wp-roles-permissions'); ?></label>
+                                </th>
+                                <td>
+                                    <?php
+                                    $current_capability = $edit_template && isset($edit_template['edit_capability']) ? $edit_template['edit_capability'] : 'manage_options';
+                                    $capabilities = array(
+                                        'manage_options' => __('Administrators Only', 'wp-roles-permissions'),
+                                        'edit_posts' => __('Authors and Above', 'wp-roles-permissions'),
+                                        'edit_pages' => __('Editors and Above', 'wp-roles-permissions')
+                                    );
+                                    ?>
+                                    <select name="edit_capability" id="edit_capability">
+                                        <?php foreach ($capabilities as $cap => $label): ?>
+                                            <option value="<?php echo esc_attr($cap); ?>" <?php selected($current_capability, $cap); ?>>
+                                                <?php echo esc_html($label); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <p class="description"><?php _e('Who can edit this template.', 'wp-roles-permissions'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    <label for="template_content"><?php _e('Template Content', 'wp-roles-permissions'); ?></label>
+                                </th>
+                                <td>
+                                    <textarea name="template_content" id="template_content" rows="20" class="large-text code"><?php 
+                                        echo $edit_template ? esc_textarea($edit_template['content']) : ''; 
+                                    ?></textarea>
+                                    <p class="description">
+                                        <?php _e('Use shortcodes to display post data. Available shortcodes:', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_id]</code> - <?php _e('Post ID', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_class]</code> - <?php _e('Post CSS classes', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_title]</code> - <?php _e('Post title', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_date]</code> - <?php _e('Post date', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_author]</code> - <?php _e('Post author', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_content]</code> - <?php _e('Post content', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_excerpt]</code> - <?php _e('Post excerpt', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_categories]</code> - <?php _e('Post categories', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_tags]</code> - <?php _e('Post tags', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_thumbnail]</code> - <?php _e('Featured image', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_edit_link]</code> - <?php _e('Edit link', 'wp-roles-permissions'); ?>
+                                        <br><code>[post_comments]</code> - <?php _e('Comments section', 'wp-roles-permissions'); ?>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <?php if ($edit_template): ?>
+                            <p class="submit">
+                                <input type="submit" name="update_template" class="button button-primary" value="<?php _e('Update Template', 'wp-roles-permissions'); ?>">
+                                <a href="<?php echo admin_url('admin.php?page=wp-roles-permissions-templates'); ?>" class="button"><?php _e('Cancel', 'wp-roles-permissions'); ?></a>
+                            </p>
+                        <?php else: ?>
+                            <p class="submit">
+                                <input type="submit" name="create_template" class="button button-primary" value="<?php _e('Create Template', 'wp-roles-permissions'); ?>">
+                            </p>
+                        <?php endif; ?>
+                    </form>
+                </div>
+                
+                <div class="wp-roles-permissions-list-container">
+                    <h2><?php _e('Available Templates', 'wp-roles-permissions'); ?></h2>
+                    
+                    <?php if (empty($templates)): ?>
+                        <p><?php _e('No templates created yet.', 'wp-roles-permissions'); ?></p>
+                    <?php else: ?>
+                        <table class="wp-list-table widefat fixed striped">
+                            <thead>
+                                <tr>
+                                    <th><?php _e('Template Name', 'wp-roles-permissions'); ?></th>
+                                    <th><?php _e('Slug', 'wp-roles-permissions'); ?></th>
+                                    <th><?php _e('Description', 'wp-roles-permissions'); ?></th>
+                                    <th><?php _e('Actions', 'wp-roles-permissions'); ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($templates as $slug => $template): ?>
+                                <tr>
+                                    <td><strong><?php echo esc_html($template['name']); ?></strong></td>
+                                    <td><?php echo esc_html($slug); ?></td>
+                                    <td><?php echo esc_html($template['description']); ?></td>
+                                    <td>
+                                        <?php if ($this->template_manager->user_can_edit_template($slug)): ?>
+                                            <a href="<?php echo admin_url('admin.php?page=wp-roles-permissions-templates&edit=' . urlencode($slug)); ?>" class="button button-small">
+                                                <?php _e('Edit', 'wp-roles-permissions'); ?>
+                                            </a>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($slug !== 'default_group_posts' && current_user_can('manage_options')): ?>
+                                            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=wp-roles-permissions-templates&action=delete&template=' . urlencode($slug)), 'delete_template_' . $slug); ?>" 
+                                               class="button button-small" 
+                                               onclick="return confirm('<?php _e('Are you sure you want to delete this template?', 'wp-roles-permissions'); ?>');">
+                                                <?php _e('Delete', 'wp-roles-permissions'); ?>
+                                            </a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         <?php
